@@ -1,10 +1,10 @@
 class Book {
   final int id;
-  String? title;
-  String? author;
-  String? coverUrl;
+  final String? title;
+  final String? author;
+  final String? coverUrl;
+  final String? downloadUrl;
   String? imagePath;
-  String? downloadUrl;
   bool isFavorite;
 
   Book({
@@ -12,8 +12,8 @@ class Book {
     this.title,
     this.author,
     this.coverUrl,
-    this.imagePath,
     this.downloadUrl,
+    this.imagePath,
     this.isFavorite = false,
   });
 
@@ -23,8 +23,8 @@ class Book {
       title: json['title'] as String?,
       author: json['author'] as String?,
       coverUrl: json['cover_url'] as String?,
-      imagePath: json['image_path'] as String?,
       downloadUrl: json['download_url'] as String?,
+      imagePath: json['image_path'] as String?,
       isFavorite: false,
     );
   }
@@ -35,10 +35,9 @@ class Book {
       'title': title,
       'author': author,
       'cover_url': coverUrl,
-      'image_path': imagePath,
       'download_url': downloadUrl,
-      'is_favorite': isFavorite,
-
+      'image_path': imagePath,
+      'is_favorite': isFavorite ? 1 : 0,
     };
   }
 }

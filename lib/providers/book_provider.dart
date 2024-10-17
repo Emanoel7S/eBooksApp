@@ -1,3 +1,4 @@
+import 'package:ebooks_app/services/database_services.dart';
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/book_service.dart';
@@ -26,7 +27,9 @@ class BookProvider with ChangeNotifier {
   }
 
   void toggleFavorite(Book book) {
-    book.isFavorite = !book.isFavorite;
-    notifyListeners();
+    book.isFavorite = !book.isFavorite; // Alterna o estado do favorito
+    DatabaseHelper.updateFavoriteStatus(book); // Atualiza o banco de dados
+    notifyListeners(); // Notifica os ouvintes para atualizar a interface
   }
+
 }
