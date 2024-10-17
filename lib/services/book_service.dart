@@ -29,10 +29,11 @@ class BookService {
 
   Future<List<Book>> fetchBooks() async {
     try {
-      // List<Book> bdBooks = await DatabaseHelper.getBooks();
-      // if (bdBooks.isNotEmpty) {
-      //   return bdBooks;
-      // }
+      ///
+      List<Book> bdBooks = await DatabaseHelper.getBooks();
+      if (bdBooks.isNotEmpty) {
+        return bdBooks;
+      }
 
       final response = await http.get(Uri.parse(apiUrl));
 
@@ -40,7 +41,7 @@ class BookService {
         List<dynamic> jsonData = json.decode(response.body);
         List<Book> books = jsonData.map((json) => Book.fromJson(json)).toList();
 
-
+        /// ajustar a imagem ta sendo baixada toda vez
         for (var book in books) {
           if (book.coverUrl != null) {
             String fileName = 'book_${book.id}.png';

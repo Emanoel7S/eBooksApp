@@ -49,14 +49,17 @@ class _HomePageState extends State<HomePage> {
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: const Text(
+                  child:  TextButton(onPressed: (){
+                    Provider.of<BookProvider>(context, listen: false).noOnlyFavorite();
+
+                  }, child: const Text(
                     'Livros',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
+                  ),)
                 ),
               ),
               const SizedBox(width: 8.0),
@@ -67,13 +70,15 @@ class _HomePageState extends State<HomePage> {
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  child: const Text(
-                    'Favoritos',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child:  TextButton(
+                    onPressed: (){
+                      Provider.of<BookProvider>(context, listen: false).onlyFavorite();
+
+                    }
+                    , child: Text('Favoritos', style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),),
                   ),
                 ),
               ),
@@ -83,6 +88,7 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Consumer<BookProvider>(
               builder: (context, bookProvider, child) {
+                print('builando');
                 if (bookProvider.isLoading) {
                   return Center(child: CircularProgressIndicator());
                 }
