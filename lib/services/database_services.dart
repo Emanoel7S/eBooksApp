@@ -4,14 +4,14 @@ import '../models/book.dart';
 
 class DatabaseHelper {
   static Database? _database;
-
+  // Retorna a instância do banco de dados
   static Future<Database> getDatabase() async {
     if (_database != null) return _database!;
 
     _database = await _initDatabase();
     return _database!;
   }
-
+  // Inicializa o banco e cria a tabela books
   static Future<Database> _initDatabase() async {
     final String path = join(await getDatabasesPath(), 'books.db');
     return await openDatabase(
@@ -26,10 +26,11 @@ class DatabaseHelper {
             cover_url TEXT,
             download_url TEXT,
             image_path TEXT,
-            is_favorite INTEGER DEFAULT 0  -- Adicionado campo para favoritos
+            is_favorite INTEGER DEFAULT 0  
           )
         ''');
       },
+      // Atualiza o banco para a nova versao adicionando a tabela is_favorite
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           print('add coluna');
@@ -41,19 +42,16 @@ class DatabaseHelper {
     );
   }
 
-  static Future<void> insertBook(Book book) async {
+  // Insere novos livros
+  static Future<void> insertBooks(List<Book> newBooks, List<Book> oldBooks) async {
     final db = await getDatabase();
-    await db.insert(
-      'books',
-      book.toJson(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+      final Set<int> oldBookIds = oldBooks.map((book) => book.id).toSet();
+    // Verifica se o id do livro ja está nos livros antigos
+    for (var book in newBooks) {
+        if (oldBookIds.contains(book.id)) {
+          continue;
+        }
 
-  static Future<void> insertBooks(List<Book> books) async {
-    final db = await getDatabase();
-
-    for (var book in books) {
       await db.insert(
         'books',
         book.toJson(),
@@ -62,6 +60,7 @@ class DatabaseHelper {
     }
   }
 
+  // Consultar e retorna uma lista de Book do banco
   static Future<List<Book>> getBooks() async {
     final db = await getDatabase();
     final List<Map<String, dynamic>> maps = await db.query('books');
@@ -79,8 +78,9 @@ class DatabaseHelper {
     });
   }
 
-
+ // Atualiza campos is_favorite no banco
   static Future<void> updateFavoriteStatus(Book book) async {
+    print('update para ${book.isFavorite}');
     final db = await getDatabase();
     await db.update(
       'books',

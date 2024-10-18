@@ -11,7 +11,7 @@ class BookProvider with ChangeNotifier {
 
   List<Book> get books => _onlyFavorite?_booksFavorite:_books;
   bool get isLoading => _isLoading;
-
+  // Chama a funcao de buscar os livros, e faz controle do estado de books e isLoading
   Future<void> fetchBooks() async {
     _isLoading = true;
     notifyListeners();
@@ -28,10 +28,11 @@ class BookProvider with ChangeNotifier {
     }
   }
 
+  //Altera o estado, e salva no banco
   void toggleFavorite(Book book) {
-    book.isFavorite = !book.isFavorite; // Alterna o estado do favorito
-    DatabaseHelper.updateFavoriteStatus(book); // Atualiza o banco de dados
-    notifyListeners(); // Notifica os ouvintes para atualizar a interface
+    book.isFavorite = !book.isFavorite;
+    DatabaseHelper.updateFavoriteStatus(book);
+    notifyListeners();
   }
   // Filtra os favoritos
   void onlyFavorite () {
@@ -46,7 +47,7 @@ class BookProvider with ChangeNotifier {
     print(_booksFavorite);
     notifyListeners();
   }
-  // retira o filtro
+  // Retira o filtro
   void noOnlyFavorite(){
     _onlyFavorite = false;
       notifyListeners();
