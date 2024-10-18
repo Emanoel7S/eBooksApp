@@ -10,7 +10,6 @@ class BookService {
   final String apiUrl = 'https://escribo.com/books.json';
 
   Future<String> saveImage(String url, String fileName) async {
-    print('download da imagem');
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -26,40 +25,59 @@ class BookService {
       throw Exception('Falha ao baixar a imagem: ${response.statusCode}');
     }
   }
+  // Busca  pelos livros na api para garantir que sempre estejam sincronizados caso
+  // tenha novos livros fazendo verificacoes a fim de melhorar o desempenho
 
   Future<List<Book>> fetchBooks() async {
+    List<Book> bdBooks = await DatabaseHelper.getBooks();
     try {
-      ///
-      List<Book> bdBooks = await DatabaseHelper.getBooks();
-      if (bdBooks.isNotEmpty) {
-        return bdBooks;
-      }
 
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         List<dynamic> jsonData = json.decode(response.body);
         List<Book> books = jsonData.map((json) => Book.fromJson(json)).toList();
+        // Verificar se a imagem ja foi baixada
+        await imageExistsLocally(books);
 
-        /// ajustar a imagem ta sendo baixada toda vez
-        for (var book in books) {
-          if (book.coverUrl != null) {
-            String fileName = 'book_${book.id}.png';
-            String imagePath = await saveImage(book.coverUrl!, fileName);
-            print(imagePath);
-            book.imagePath = imagePath;
-          }
-        }
 
-        await DatabaseHelper.insertBooks(books);
+        await DatabaseHelper.insertBooks(books,bdBooks);
+        List<Book> updatedBooks = await DatabaseHelper.getBooks();
 
-        return books;
+        return updatedBooks;
       } else {
+        if (bdBooks.isNotEmpty) {
+          return bdBooks;
+        }
         throw Exception('Falha ao carregar livros: ${response.statusCode}');
       }
     } catch (e) {
-      print('Erro: $e');
+      if (bdBooks.isNotEmpty) {
+        return bdBooks;
+      }
+      // print('Erro: $e');
       throw Exception('Erro: $e');
+    }
+  }
+
+  Future<void> imageExistsLocally(List<Book> books) async {
+    for (var book in books) {
+      if (book.coverUrl != null) {
+        String fileName = 'book_${book.id}.png';
+        String imagePath = join((await getApplicationDocumentsDirectory()).path, fileName);
+
+
+        final file = File(imagePath);
+        if (await file.exists()) {
+          print('Imagem já existe: $imagePath');
+          book.imagePath = imagePath;
+        } else {
+
+          imagePath = await saveImage(book.coverUrl!, fileName);
+          print('Imagem baixada: $imagePath');
+          book.imagePath = imagePath;
+        }
+      }
     }
   }
 }
