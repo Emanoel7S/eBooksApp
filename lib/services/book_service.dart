@@ -1,47 +1,43 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:ebooks_app/services/database_services.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/book.dart';
 
 class BookService {
   final String apiUrl = 'https://escribo.com/books.json';
+  // Faz o download da imagem e salva no diretorio da aplciacao
+  Future<String> saveImage(String imageUrl, String fileName) async {
+    String imagePath = join((await getApplicationDocumentsDirectory()).path, fileName);
 
-  Future<String> saveImage(String url, String fileName) async {
-    final response = await http.get(Uri.parse(url));
+    try{
+      await Dio().download(imageUrl, imagePath);
 
-    if (response.statusCode == 200) {
-
-      final directory = await getApplicationDocumentsDirectory();
-      final path = join(directory.path, fileName);
-      final file = File(path);
-
-
-      await file.writeAsBytes(response.bodyBytes);
-      return path;
-    } else {
-      throw Exception('Falha ao baixar a imagem: ${response.statusCode}');
+      return imagePath;
+    }catch(e){
+      return 'fail';
     }
+
   }
+
   // Busca  pelos livros na api para garantir que sempre estejam sincronizados caso
   // tenha novos livros fazendo verificacoes a fim de melhorar o desempenho
-
   Future<List<Book>> fetchBooks() async {
     List<Book> bdBooks = await DatabaseHelper.getBooks();
     try {
 
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await  Dio().get(apiUrl);
 
       if (response.statusCode == 200) {
-        List<dynamic> jsonData = json.decode(response.body);
+        List<dynamic> jsonData = response.data; // Com o Dio, você pode acessar diretamente `response.data`
         List<Book> books = jsonData.map((json) => Book.fromJson(json)).toList();
-        // Verificar se a imagem ja foi baixada
+
+        // Verificar se a imagem já foi baixada
         await imageExistsLocally(books);
 
-
-        await DatabaseHelper.insertBooks(books,bdBooks);
+        await DatabaseHelper.insertBooks(books, bdBooks);
         List<Book> updatedBooks = await DatabaseHelper.getBooks();
 
         return updatedBooks;
@@ -55,11 +51,11 @@ class BookService {
       if (bdBooks.isNotEmpty) {
         return bdBooks;
       }
-      // print('Erro: $e');
       throw Exception('Erro: $e');
     }
   }
 
+  // Verifica se a imagem ja existe local e chama funcao de download se necessario.
   Future<void> imageExistsLocally(List<Book> books) async {
     for (var book in books) {
       if (book.coverUrl != null) {
@@ -69,15 +65,59 @@ class BookService {
 
         final file = File(imagePath);
         if (await file.exists()) {
-          print('Imagem já existe: $imagePath');
           book.imagePath = imagePath;
         } else {
-
           imagePath = await saveImage(book.coverUrl!, fileName);
-          print('Imagem baixada: $imagePath');
           book.imagePath = imagePath;
         }
       }
     }
+  }
+  //Faz download do livro
+  Future<bool>bookDownload(Book book) async {
+
+    if(book.bookPath!=null) {
+      return true;
+    }
+    try{
+      print('inicio download');
+      Directory? appDocDir = await getExternalStorageDirectory();
+
+      String path = '${appDocDir!.path}/book_${book.id}.epub';
+      print('path final$path');
+      File file = File(path);
+      print(file);
+      if (!File(path).existsSync()) {
+        print('entrou aqui');
+        await file.create();
+        try{
+          await Dio().download(
+            book.downloadUrl!,
+            path,
+            deleteOnError: true,
+            onReceiveProgress: (receivedBytes, totalBytes) {
+              print('Download --- ${(receivedBytes / totalBytes) * 100}');
+              print('path --- $path');
+
+            },
+          );
+          book.bookPath = path;
+          print('bookpath try${book.bookPath}');
+        }catch(e){
+          print('falah download');
+          ///mostra snack de falha
+          book.bookPath=null;
+        }
+
+      }
+      print('atualizando path');
+
+      await DatabaseHelper.insertBook(book);
+      return true;
+    }catch(e){
+      book.bookPath = null;
+      return false;
+    }
+
   }
 }
