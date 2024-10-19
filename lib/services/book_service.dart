@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:ebooks_app/services/database_services.dart';
+import 'package:ebooks_app/services/snackbar_service.dart';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/book.dart';
@@ -80,36 +82,29 @@ class BookService {
       return true;
     }
     try{
-      print('inicio download');
       Directory? appDocDir = await getExternalStorageDirectory();
 
       String path = '${appDocDir!.path}/book_${book.id}.epub';
-      print('path final$path');
       File file = File(path);
-      print(file);
       if (!File(path).existsSync()) {
-        print('entrou aqui');
         await file.create();
         try{
           await Dio().download(
             book.downloadUrl!,
             path,
             deleteOnError: true,
-            onReceiveProgress: (receivedBytes, totalBytes) {
-              print('Download --- ${(receivedBytes / totalBytes) * 100}');
-              print('path --- $path');
-
-            },
           );
           book.bookPath = path;
-          print('bookpath try${book.bookPath}');
           await DatabaseHelper.insertBook(book);
+          SnackBarHelper.showSnackBar('Download concluido',Colors.green);
+
         }catch(e){
           File file = File(path);
           if (await file.exists()) {
             await file.delete();
           }
-          ///mostra snack de falha
+          SnackBarHelper.showSnackBar('Falha no Download',Colors.red);
+
           book.bookPath=null;
         }
 
@@ -122,6 +117,7 @@ class BookService {
 
       return true;
     }catch(e){
+      SnackBarHelper.showSnackBar('Falha no Download',Colors.red);
       book.bookPath = null;
       return false;
     }

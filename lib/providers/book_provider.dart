@@ -2,6 +2,7 @@ import 'package:ebooks_app/services/database_services.dart';
 import 'package:flutter/material.dart';
 import '../models/book.dart';
 import '../services/book_service.dart';
+import '../services/snackbar_service.dart';
 
 class BookProvider with ChangeNotifier {
   List<Book> _books = [];
@@ -65,21 +66,15 @@ class BookProvider with ChangeNotifier {
 
       try {
         bool success = await BookService().bookDownload(book);
-        /// mostrar snack, download inciiaod
-        if (success) {
 
-          /// mostrar snack, download sucess
-        }else{
-          /// mostrar snack, download fail
-          print('falaha download');
+        if (!success) {
           book.bookPath = null;
           book.downloadInProgress = false;
         }
       } catch (e) {
-        /// mostrar snack, download fail
 
+        SnackBarHelper.showSnackBar('Falha no Download',Colors.red);
         book.downloadInProgress = false;
-        print('Erro ao baixar o livro: $e');
       } finally {
 
         book.downloadInProgress = false;

@@ -1,4 +1,5 @@
 import 'package:ebooks_app/providers/book_provider.dart';
+import 'package:ebooks_app/services/snackbar_service.dart';
 import 'package:ebooks_app/views/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,8 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => BookProvider(),
       child: MaterialApp(
+        scaffoldMessengerKey: SnackBarHelper.scaffoldMessengerKey, // Adicione esta linha
+
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
