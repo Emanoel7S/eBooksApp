@@ -2,6 +2,7 @@ import 'package:ebooks_app/models/book.dart';
 import 'package:ebooks_app/widgets/book_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vocsy_epub_viewer/epub_viewer.dart';
 import '../providers/book_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage> {
                       Provider.of<BookProvider>(context, listen: false).onlyFavorite();
 
                     }
-                    , child: Text('Favoritos', style: TextStyle(
+                    , child: const Text('Favoritos', style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),),
@@ -88,7 +89,6 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Consumer<BookProvider>(
               builder: (context, bookProvider, child) {
-                print('builando');
                 if (bookProvider.isLoading) {
                   return Center(child: CircularProgressIndicator());
                 }
@@ -108,13 +108,23 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     final book = bookProvider.books[index];
                     return GestureDetector(
-                      onTap: () {
-                        print('Tap ${book.title}');
-                      },
-                      child: BookWidget(book: book,
-                          onFavoriteToggle: () {
-                    Provider.of<BookProvider>(context, listen: false).toggleFavorite(book);
-                    },
+                        onTap: () async {
+
+                          await bookProvider.downloadBook(book);
+
+                          if(context.mounted && book.bookPath!=null){
+
+                              openBook(context, book);
+
+                          }
+                        },
+
+                      child: BookWidget(
+                        book: book,
+                        onFavoriteToggle: () {
+                          Provider.of<BookProvider>(context, listen: false)
+                              .toggleFavorite(book);
+                        },
 
                       ),
                     );
@@ -127,4 +137,36 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void openBook(BuildContext context, Book book) {
+      VocsyEpub.setConfig(
+        themeColor: Theme.of(context).primaryColor,
+        identifier: "androidBook",
+        scrollDirection: EpubScrollDirection.ALLDIRECTIONS,
+        allowSharing: true,
+        enableTts: true,
+        nightMode: true,
+      );
+
+      VocsyEpub.locatorStream.listen((locator) {
+        print('LOCATOR: $locator');
+        VocsyEpub.closeReader();
+
+      });
+
+      VocsyEpub.open(
+        book.bookPath!,
+      );
+
+
+  }
+  // void openBook(BuildContext context, Book book) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => BookReaderScreen(book: book),
+  //     ),
+  //   );
+  // }
+
 }
