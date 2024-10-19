@@ -104,7 +104,10 @@ class BookService {
           book.bookPath = path;
           print('bookpath try${book.bookPath}');
         }catch(e){
-          print('falah download');
+          File file = File(path);
+          if (await file.exists()) {
+            await file.delete();
+          }
           ///mostra snack de falha
           book.bookPath=null;
         }
