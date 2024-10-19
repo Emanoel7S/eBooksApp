@@ -13,8 +13,7 @@ class BookProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   // Chama a funcao de buscar os livros, e faz controle do estado de books e isLoading
   Future<void> fetchBooks() async {
-    _isLoading = true;
-    notifyListeners();
+    _isLoading = true;notifyListeners();
 
     try {
       List<Book> fetchedBooks = await BookService().fetchBooks();
@@ -30,7 +29,13 @@ class BookProvider with ChangeNotifier {
 
   //Altera o estado, e salva no banco
   void toggleFavorite(Book book) {
-    book.isFavorite = !book.isFavorite;
+    bool newFavorite = !book.isFavorite;
+    book.isFavorite = newFavorite;
+    //  Se _onlyFavorite estiver ativo e e um livro favorito for desfavoritado atualzia a lista de favoritos
+    if(_onlyFavorite&&!newFavorite){
+      print('novo favorito para $newFavorite');
+      onlyFavorite();
+    }
     DatabaseHelper.updateFavoriteStatus(book);
     notifyListeners();
   }
@@ -38,10 +43,9 @@ class BookProvider with ChangeNotifier {
   void onlyFavorite () {
     _onlyFavorite= true;
     List<Book> booksFav = [];
-    for( var book in _books){
-      if(book.isFavorite){
-        booksFav.add(book);
-      }
+    for( var book in _books){if(book.isFavorite){
+      booksFav.add(book);
+     }
     }
     _booksFavorite = booksFav;
     print(_booksFavorite);
@@ -52,5 +56,37 @@ class BookProvider with ChangeNotifier {
     _onlyFavorite = false;
       notifyListeners();
   }
+// funcao de download do livro e atualizacao do estado do progresso
+  Future<void> downloadBook(Book book) async {
+      if (book.downloadInProgress) return;
 
-}
+      book.downloadInProgress = true;
+      notifyListeners();
+
+      try {
+        bool success = await BookService().bookDownload(book);
+        /// mostrar snack, download inciiaod
+        if (success) {
+
+          /// mostrar snack, download sucess
+        }else{
+          /// mostrar snack, download fail
+          print('falaha download');
+          book.bookPath = null;
+          book.downloadInProgress = false;
+        }
+      } catch (e) {
+        /// mostrar snack, download fail
+
+        book.downloadInProgress = false;
+        print('Erro ao baixar o livro: $e');
+      } finally {
+
+        book.downloadInProgress = false;
+        notifyListeners();
+      }
+    }
+
+
+
+  }
