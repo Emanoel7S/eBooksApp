@@ -103,6 +103,7 @@ class BookService {
           );
           book.bookPath = path;
           print('bookpath try${book.bookPath}');
+          await DatabaseHelper.insertBook(book);
         }catch(e){
           File file = File(path);
           if (await file.exists()) {
@@ -112,10 +113,13 @@ class BookService {
           book.bookPath=null;
         }
 
+      }else{
+        book.bookPath = path;
+        await DatabaseHelper.insertBook(book);
+
       }
       print('atualizando path');
 
-      await DatabaseHelper.insertBook(book);
       return true;
     }catch(e){
       book.bookPath = null;

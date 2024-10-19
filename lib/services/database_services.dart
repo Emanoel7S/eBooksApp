@@ -63,16 +63,15 @@ class DatabaseHelper {
     final db = await getDatabase();
       final Set<int> oldBookIds = oldBooks.map((book) => book.id).toSet();
     // Verifica se o id do livro ja está nos livros antigos
+     // e so insere ids novos
     for (var book in newBooks) {
-        if (oldBookIds.contains(book.id)) {
-          continue;
-        }
-
-      await db.insert(
-        'books',
-        book.toJson(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      if (!oldBookIds.contains(book.id)) {
+        await db.insert(
+          'books',
+          book.toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
     }
   }
 
