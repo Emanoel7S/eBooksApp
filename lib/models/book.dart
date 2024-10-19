@@ -5,7 +5,9 @@ class Book {
   final String? coverUrl;
   final String? downloadUrl;
   String? imagePath;
+  String? bookPath;
   bool isFavorite;
+  bool downloadInProgress;
 
   Book({
     required this.id,
@@ -14,7 +16,9 @@ class Book {
     this.coverUrl,
     this.downloadUrl,
     this.imagePath,
+    this.bookPath,
     this.isFavorite = false,
+    this.downloadInProgress = false,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -25,7 +29,9 @@ class Book {
       coverUrl: json['cover_url'] as String?,
       downloadUrl: json['download_url'] as String?,
       imagePath: json['image_path'] as String?,
+      bookPath: json['book_path'] as String?,
       isFavorite: false,
+      downloadInProgress: false,
     );
   }
 
@@ -37,6 +43,7 @@ class Book {
       'cover_url': coverUrl,
       'download_url': downloadUrl,
       'image_path': imagePath,
+      'book_path': bookPath,
       'is_favorite': isFavorite ? 1 : 0,
     };
   }
