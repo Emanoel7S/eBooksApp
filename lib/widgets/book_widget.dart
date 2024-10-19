@@ -23,6 +23,7 @@ class _BookWidgetState extends State<BookWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        widget.book.downloadInProgress?SizedBox(height:150,child: const CircularProgressIndicator()):
         Card(
           child: Stack(
             alignment: Alignment.topRight,
