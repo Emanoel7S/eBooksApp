@@ -16,7 +16,7 @@ class DatabaseHelper {
     final String path = join(await getDatabasesPath(), 'books.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) {
         return db.execute(''' 
           CREATE TABLE books (
@@ -26,6 +26,7 @@ class DatabaseHelper {
             cover_url TEXT,
             download_url TEXT,
             image_path TEXT,
+            book_path TEXT,
             is_favorite INTEGER DEFAULT 0  
           )
         ''');
@@ -38,10 +39,25 @@ class DatabaseHelper {
             ALTER TABLE books ADD COLUMN is_favorite INTEGER DEFAULT 0
           ''');
         }
+        if(oldVersion < 3){
+          print('add coluna');
+          await db.execute(''' 
+            ALTER TABLE books ADD COLUMN book_path TEXT
+          ''');
+        }
       },
     );
   }
+  // Inseri um novo livro
+  static Future<void> insertBook(Book newBook) async {
+    final db = await getDatabase();
+      await db.insert(
+        'books',
+        newBook.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 
+  }
   // Insere novos livros
   static Future<void> insertBooks(List<Book> newBooks, List<Book> oldBooks) async {
     final db = await getDatabase();
