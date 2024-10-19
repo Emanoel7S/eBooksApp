@@ -1,16 +1,38 @@
-# ebooks_app
+# E-books App
 
-A new Flutter project.
+Um aplicativo Flutter para visualizar e gerenciar e-books, construído seguindo princípios de programação SOLID.
 
-## Getting Started
+## Requisitos Técnicos
 
-This project is a starting point for a Flutter application.
+- Flutter versão 3.24.3 / Dart 3.5.3
+- Dependências: `Dio`, `Provider`, `sqflite`, `path`, `path_provider`, `vocsy_epub_viewer`.
 
-A few resources to get you started if this is your first Flutter project:
+## Funcionalidades
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Exibição de uma lista de livros com detalhes como título, autor e capa.
+- Funcionalidade de marcar livros como favoritos.
+- Download de livros para leitura offline.
+- Filtro para visualizar apenas os livros favoritos.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Estrutura do Projeto
+
+- **models/book.dart**: Modelo de dados para livros.
+- **services/book_service.dart**: Gerencia requisições HTTP e manipulação de arquivos.
+- **services/database_services.dart**: Operações de banco de dados usando SQLite.
+- **providers/book_provider.dart**: Gerencia o estado da aplicação e fornece a lista de livros.
+- **views/home_page.dart**: Interface principal do aplicativo.
+- **widgets/book_widget.dart**: Exibe os detalhes de cada livro.
+
+## Execução
+
+Para instalar e executar este aplicativo, siga os passos abaixo:
+
+1. **Clone o repositório**:
+   git clone https://github.com/Emanoel7S/eBooksApp
+2. **Instale as dependências**:
+   flutter pub get
+3. **Execute o aplicativo**:
+   flutter run
+
+
+
